@@ -1,4 +1,4 @@
-import { bearerMiddleware } from "@/middleware/bearer";
+import { bearerMiddleware } from "@/middleware/bearer.mw";
 import { authService } from "@/services/auth.service";
 import { Hono } from "hono";
 

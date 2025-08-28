@@ -1,5 +1,5 @@
 import { authLib } from "@/lib/auth.lib";
-import { Context, MiddlewareHandler, Next } from "hono";
+import type { Context, MiddlewareHandler, Next } from "hono";
 
 export const bearerMiddleware: MiddlewareHandler = async (
   c: Context,
@@ -16,7 +16,8 @@ export const bearerMiddleware: MiddlewareHandler = async (
     const verify = await authLib.verifyToken(token);
     c.set("tokenPayload", { ...verify });
     await next();
-  } catch {
+  } catch (error) {
+    console.log(error);
     return c.json({ message: "Unauthorized" }, 401);
   }
 };
