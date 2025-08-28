@@ -1,21 +1,17 @@
 import type { SidebarNavGroup, SidebarNavItem } from "@/types/dashboard";
 import type { IRole } from "@repo/db-schema";
 import {
-  Home,
   BarChart3,
-  Users,
-  Settings,
-  FileText,
-  Calendar,
-  Bell,
-  CreditCard,
-  MessageSquare,
-  Zap,
   Bean,
-  Plus,
-  Trash2,
-  Edit,
-  Eye,
+  Bell,
+  Calendar,
+  CreditCard,
+  FileText,
+  Home,
+  MessageSquare,
+  Settings,
+  Users,
+  Zap,
 } from "lucide-react";
 
 export interface MenuItem extends SidebarNavItem {
