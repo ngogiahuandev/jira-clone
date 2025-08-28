@@ -243,6 +243,16 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
+  packages/types:
+    dependencies:
+      '@repo/db-schema':
+        specifier: workspace:^
+        version: link:../db-schema
+    devDependencies:
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
   packages/validation:
     dependencies:
       zod:
