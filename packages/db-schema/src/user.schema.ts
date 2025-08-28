@@ -4,7 +4,7 @@ export const roles = pgEnum("roles", ["admin", "regular"]);
 export type IRole = (typeof roles.enumValues)[number];
 
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),

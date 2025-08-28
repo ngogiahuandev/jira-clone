@@ -12,5 +12,4 @@ const pool = new Pool({
 export const db = drizzle(pool, {
   schema,
   casing: "snake_case",
-  logger: true,
 });

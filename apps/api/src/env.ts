@@ -7,7 +7,6 @@ const envSchema = z.object({
   JWT_SECRET: z.string(),
   ACCESS_TOKEN_TTL: z.string(),
   REFRESH_TOKEN_TTL_SECONDS: z.coerce.number(),
-  REFRESH_COOKIE_NAME: z.string(),
   PORT: z.coerce.number(),
   NODE_ENV: z.enum(["development", "production"]),
   COOKIE_SECRET: z.string(),

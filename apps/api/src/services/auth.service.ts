@@ -1,10 +1,10 @@
-import { Context } from "hono";
-import { loginSchema } from "@repo/validation";
-import { authLib } from "@/lib/auth.lib";
-import { redis } from "@/redis";
 import { env } from "@/env";
-import { setSignedCookie } from "hono/cookie";
+import { authLib } from "@/lib/auth.lib";
+import { setRefreshCookie } from "@/lib/cookie";
+import { redis } from "@/redis";
 import type { LoginResponse } from "@repo/types";
+import { loginSchema } from "@repo/validation";
+import { Context } from "hono";
 
 export const authService = {
   signIn: async (c: Context) => {
@@ -12,7 +12,7 @@ export const authService = {
     const parsed = loginSchema.safeParse(body);
 
     if (!parsed.success) {
-      return c.json({ success: false, message: parsed.error.flatten }, 400);
+      return c.json({ message: parsed.error.issues }, 400);
     }
 
     const { email, password } = parsed.data;
@@ -37,17 +37,15 @@ export const authService = {
 
     await Promise.all([
       redis.set(
-        `refresh:${refreshToken}`,
+        `refresh:${user.id!}`,
         refreshToken,
         "EX",
         env.REFRESH_TOKEN_TTL_SECONDS
       ),
-      setSignedCookie(
-        c,
-        env.REFRESH_COOKIE_NAME,
+      setRefreshCookie(c, {
+        uuid: user.id!,
         refreshToken,
-        env.COOKIE_SECRET
-      ),
+      }),
     ]);
 
     const { password: _pw, ...userWithoutPassword } = user;
