@@ -2,22 +2,14 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { env } from "./env";
-import { db } from "@/db/drizzle";
-import { users } from "@repo/db-schema";
-import { loginSchema } from "@repo/validation";
+import routes from "@/routes";
+import { cors } from "hono/cors";
 
 const app = new Hono();
 app.use(logger());
+app.use(cors());
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
-});
-
-const user = await db.select().from(users);
-console.log(user);
-console.log(
-  loginSchema.safeParse({ email: "test@test.com", password: "test" })
-);
+app.route("/api", routes);
 
 serve(
   {
