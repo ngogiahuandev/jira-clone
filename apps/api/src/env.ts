@@ -10,6 +10,7 @@ const envSchema = z.object({
   REFRESH_COOKIE_NAME: z.string(),
   PORT: z.coerce.number(),
   NODE_ENV: z.enum(["development", "production"]),
+  COOKIE_SECRET: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

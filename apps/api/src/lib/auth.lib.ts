@@ -6,6 +6,9 @@ import * as jose from "jose";
 import { env } from "@/env";
 import type { JwtPayload } from "@repo/types";
 import { createHash, randomBytes } from "crypto";
+import { sha256 } from "hono/utils/crypto";
+import { redis } from "@/redis";
+import { setSignedCookie } from "hono/cookie";
 
 export const authLib = {
   findUserByEmail: async (email: string): Promise<IUser | null> => {
@@ -32,7 +35,7 @@ export const authLib = {
     return await argon2.verify(hash, password);
   },
 
-  generateToken: async (payload: JwtPayload): Promise<string> => {
+  generateAccessToken: async (payload: JwtPayload): Promise<string> => {
     const token = await new jose.SignJWT({ payload })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("1h")
@@ -56,5 +59,18 @@ export const authLib = {
 
   sha256: (data: string) => {
     return createHash("sha256").update(data).digest("hex");
+  },
+
+  generateTokens: async (payload: JwtPayload) => {
+    const accessToken = await authLib.generateAccessToken(payload);
+    const refreshToken = authLib.sha256(authLib.newRandomToken());
+
+    if (!accessToken || !refreshToken) {
+      throw new Error("Failed to generate tokens");
+    }
+    return {
+      accessToken,
+      refreshToken,
+    };
   },
 };
