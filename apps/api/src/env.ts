@@ -9,7 +9,6 @@ const envSchema = z.object({
   REFRESH_TOKEN_TTL_SECONDS: z.coerce.number(),
   PORT: z.coerce.number(),
   NODE_ENV: z.enum(["development", "production"]),
-  COOKIE_SECRET: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

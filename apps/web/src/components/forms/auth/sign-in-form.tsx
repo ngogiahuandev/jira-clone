@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth.store";
 import { type SignInSchema, signInSchema } from "@repo/validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -25,11 +26,11 @@ export default function SignInForm() {
     mutationFn: (payload: SignInSchema) => auth.signIn(payload),
     onSuccess: (data) => {
       toast.success("Sign in successful");
-      // useAuthStore.setState({
-      //   accessToken: data.accessToken,
-      //   user: data.user,
-      //   isAuthenticated: true,
-      // });
+      useAuthStore.setState({
+        accessToken: data.accessToken,
+        user: data.user,
+        isAuthenticated: true,
+      });
       router.push("/");
     },
     onError: (error: string) => {

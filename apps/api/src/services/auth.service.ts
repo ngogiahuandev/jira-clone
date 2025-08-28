@@ -13,7 +13,9 @@ import { users } from "@repo/db-schema";
 import type {
   JwtPayload,
   MeResponse,
+  RotateTokensResponse,
   SignInResponse,
+  SignOutResponse,
   SignUpResponse,
 } from "@repo/types";
 import { signInSchema, signUpSchema } from "@repo/validation";
@@ -129,7 +131,7 @@ export const authService = {
       return c.json({ message: "User not found" }, 404);
     }
     await Promise.all([redis.del(`refresh:${userId}`), deleteRefreshCookie(c)]);
-    return c.json({ message: "Signed out successfully" });
+    return c.json<SignOutResponse>({ message: "Signed out successfully" });
   },
   me: async (c: Context) => {
     const tokenPayload = c.get("tokenPayload") as Get<JwtPayload>;
@@ -190,6 +192,6 @@ export const authService = {
       }),
     ]);
 
-    return c.json({ accessToken });
+    return c.json<RotateTokensResponse>({ accessToken });
   },
 };

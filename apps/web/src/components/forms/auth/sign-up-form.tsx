@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth.store";
 import { type SignUpSchema, signUpSchema } from "@repo/validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -24,9 +25,12 @@ export default function SignUpForm() {
   const mutation = useMutation({
     mutationFn: (payload: SignUpSchema) => auth.signUp(payload),
     onSuccess: (data) => {
-      console.log(data);
       toast.success("Sign up successful");
-
+      useAuthStore.setState({
+        accessToken: data.accessToken,
+        user: data.user,
+        isAuthenticated: true,
+      });
       router.push("/");
     },
     onError: (error: string) => {

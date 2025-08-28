@@ -9,3 +9,10 @@ export type SignUpResponse = SignInResponse;
 export type MeResponse = {
   user: Omit<IUser, "password">;
 };
+export type SignOutResponse = {
+  message: string;
+};
+
+export type RotateTokensResponse = {
+  accessToken: string;
+};

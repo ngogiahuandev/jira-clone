@@ -1,6 +1,5 @@
-import { env } from "@/env";
 import { Context } from "hono";
-import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
 interface SetCookieData {
   uuid: string;
@@ -15,21 +14,15 @@ export const setRefreshCookie = (c: Context, data: SetCookieData) => {
       : undefined;
 
   return Promise.all([
-    setSignedCookie(
-      c,
-      "refreshToken",
-      data.refreshToken,
-      env.COOKIE_SECRET,
-      options
-    ),
-    setSignedCookie(c, "uuid", data.uuid, env.COOKIE_SECRET, options),
+    setCookie(c, "refreshToken", data.refreshToken, options),
+    setCookie(c, "uuid", data.uuid, options),
   ]);
 };
 
 export const getRefreshCookie = async (c: Context) => {
   const [userId, refreshToken] = await Promise.all([
-    getSignedCookie(c, env.COOKIE_SECRET, "uuid"),
-    getSignedCookie(c, env.COOKIE_SECRET, "refreshToken"),
+    getCookie(c, "uuid"),
+    getCookie(c, "refreshToken"),
   ]);
 
   return { userId, refreshToken };
