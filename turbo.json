@@ -16,7 +16,6 @@
     "dev": {
       "cache": false,
       "persistent": true
-    },
-    "workspace": ["app/**", "packages/**"]
+    }
   }
 }

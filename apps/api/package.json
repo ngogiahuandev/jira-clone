@@ -13,6 +13,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.0",
     "@repo/db-schema": "workspace:^",
+    "@repo/validation": "workspace:^",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.4",
