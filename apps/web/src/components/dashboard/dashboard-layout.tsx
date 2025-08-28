@@ -3,8 +3,8 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardSidebar } from "./dashboard-sidebar";
-import { defaultSidebarNavigation } from "@/components/dashboard/constance";
 import type { BreadcrumbItem } from "@/types/dashboard";
+import { useSidebarStore } from "@/stores/sidebar.store";
 
 export interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,10 +14,12 @@ export function DashboardLayout({
   children,
   breadcrumbItems = [],
 }: DashboardLayoutProps) {
+  const { items } = useSidebarStore();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <DashboardSidebar navigation={defaultSidebarNavigation} />
+        <DashboardSidebar navigation={items} />
         <SidebarInset className="flex flex-col">
           <DashboardHeader breadcrumbItems={breadcrumbItems} />
           <main className="flex-1 overflow-auto p-4">{children}</main>

@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/stores/auth.store";
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
 export const axiosInstance = axios.create({
@@ -6,10 +7,10 @@ export const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    // const accessToken = useAuthStore.getState().accessToken;
-    // if (accessToken) {
-    //   config.headers.Authorization = `Bearer ${accessToken}`;
-    // }
+    const accessToken = useAuthStore.getState().accessToken;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
     return config;
   }
 );

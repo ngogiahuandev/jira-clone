@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TanstackClientProvider } from "@/components/providers/tanstack-client-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { RefreshPageProvider } from "@/components/providers/refresh-page.provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ScrollArea className="h-screen w-screen">{children}</ScrollArea>
+            <RefreshPageProvider>
+              <ScrollArea className="h-screen w-screen">{children}</ScrollArea>
+            </RefreshPageProvider>
             <Toaster position="bottom-right" richColors />
           </ThemeProvider>
         </TanstackClientProvider>
