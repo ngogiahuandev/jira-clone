@@ -1,6 +1,11 @@
 import type { IUser } from "@repo/db-schema";
 
-export type LoginResponse = {
+export type SignInResponse = {
   accessToken: string;
+  user: Omit<IUser, "password">;
+};
+
+export type SignUpResponse = SignInResponse;
+export type MeResponse = {
   user: Omit<IUser, "password">;
 };
