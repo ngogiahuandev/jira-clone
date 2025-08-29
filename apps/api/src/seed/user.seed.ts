@@ -4,6 +4,7 @@ import { authLib } from "@/lib/auth.lib";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { slugify } from "@/lib/slugify";
+import { env } from "@/env";
 
 const BASE_PASSWORD = "123456";
 
@@ -17,7 +18,7 @@ export async function seedUsers() {
     password: hashed,
     name: "Admin",
     role: "admin",
-    imageUrl: "",
+    imageUrl: `${env.AVATAR_SEED}/${slugify("admin")}`,
     slug: slugify("admin"),
   };
 
@@ -46,7 +47,7 @@ export async function seedUsers() {
       password: hashed,
       name,
       role: "regular",
-      imageUrl: faker.image.avatarGitHub(),
+      imageUrl: `${env.AVATAR_SEED}/${slug}`,
       slug,
     });
   }

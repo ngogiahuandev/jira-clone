@@ -24,7 +24,6 @@ export const useAuthStore = create<AuthState>()(
       setAuth: ({ accessToken, user, isAuthenticated }) =>
         set({ accessToken, user, isAuthenticated }),
       clearAuth: async () => {
-        await auth.signOut();
         set({ accessToken: null, user: null, isAuthenticated: false });
       },
     }),

@@ -1,4 +1,6 @@
 import { DashboardLayout } from "@/components/dashboard";
+import { DashboardTitle } from "@/components/dashboard/dashbaord-title";
+import { UserDataTable } from "@/components/data-table/users/users-data-table";
 import type { BreadcrumbItem } from "@/types/dashboard";
 
 export default function Page() {
@@ -15,7 +17,12 @@ export default function Page() {
 
   return (
     <DashboardLayout breadcrumbItems={breadcrumbItems}>
-      <div>Users</div>
+      <DashboardTitle
+        title="Users"
+        description="Manage your users"
+        className="mb-4"
+      />
+      <UserDataTable />
     </DashboardLayout>
   );
 }

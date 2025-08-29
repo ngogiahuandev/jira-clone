@@ -192,6 +192,11 @@ export const authService = {
       }),
     ]);
 
-    return c.json<RotateTokensResponse>({ accessToken });
+    const { password: _pw, ...userWithoutPassword } = user;
+
+    return c.json<RotateTokensResponse>({
+      accessToken,
+      user: userWithoutPassword,
+    });
   },
 };

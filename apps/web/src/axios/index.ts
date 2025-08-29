@@ -1,3 +1,4 @@
+import { auth } from "@/axios/auth";
 import { useAuthStore } from "@/stores/auth.store";
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
@@ -14,3 +15,23 @@ axiosInstance.interceptors.request.use(
     return config;
   }
 );
+
+axiosInstance.interceptors.response.use(async (response) => {
+  if (response.status === 401 && useAuthStore.getState().accessToken) {
+    auth
+      .rotateTokens()
+      .then((res) => {
+        useAuthStore.setState({
+          accessToken: res.accessToken,
+          user: res.user,
+        });
+      })
+      .catch(() => {
+        useAuthStore.setState({
+          accessToken: null,
+          user: null,
+        });
+      });
+  }
+  return response;
+});

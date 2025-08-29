@@ -15,4 +15,5 @@ export type SignOutResponse = {
 
 export type RotateTokensResponse = {
   accessToken: string;
+  user: Omit<IUser, "password">;
 };
