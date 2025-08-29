@@ -4,7 +4,7 @@ import type { Context, MiddlewareHandler, Next } from "hono";
 
 export const adminMiddleware: MiddlewareHandler = async (
   c: Context,
-  next: Next
+  next: Next,
 ) => {
   const tokenPayload = c.get("tokenPayload") as Get<JwtPayload>;
 

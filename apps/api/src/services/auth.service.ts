@@ -39,7 +39,7 @@ export const authService = {
 
     const isPasswordValid = await authLib.verifyPassword(
       password,
-      user.password
+      user.password,
     );
     if (!isPasswordValid) {
       return c.json({ message: "Invalid password" }, 401);
@@ -51,12 +51,16 @@ export const authService = {
       role: user.role!,
     });
 
+    if (!user.isActive) {
+      return c.json({ message: "User is not active" }, 401);
+    }
+
     await Promise.all([
       redis.set(
         `refresh:${user.id!}`,
         refreshToken,
         "EX",
-        env.REFRESH_TOKEN_TTL_SECONDS
+        env.REFRESH_TOKEN_TTL_SECONDS,
       ),
       setRefreshCookie(c, {
         uuid: user.id!,
@@ -113,7 +117,7 @@ export const authService = {
         `refresh:${newUser.id!}`,
         refreshToken,
         "EX",
-        env.REFRESH_TOKEN_TTL_SECONDS
+        env.REFRESH_TOKEN_TTL_SECONDS,
       ),
       setRefreshCookie(c, { uuid: newUser.id!, refreshToken }),
     ]);
@@ -145,6 +149,10 @@ export const authService = {
       return c.json({ message: "User not found" }, 404);
     }
 
+    if (!user.isActive) {
+      return c.json({ message: "User is not active" }, 401);
+    }
+
     const { password: _pw, ...userWithoutPassword } = user;
 
     return c.json<MeResponse>({ user: userWithoutPassword });
@@ -153,13 +161,16 @@ export const authService = {
     const { userId, refreshToken } = await getRefreshCookie(c);
 
     if (!userId || !refreshToken) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ message: "Unauthorized no token found in cookie" }, 401);
     }
 
     const redisRefreshToken = await redis.get(`refresh:${userId}`);
 
     if (redisRefreshToken !== refreshToken) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json(
+        { message: "Unauthorized invalid refresh token in redis" },
+        401,
+      );
     }
 
     const [user] = await db
@@ -171,6 +182,10 @@ export const authService = {
       return c.json({ message: "User not found" }, 404);
     }
 
+    if (!user.isActive) {
+      return c.json({ message: "User is not active" }, 401);
+    }
+
     const { accessToken, refreshToken: newRefreshToken } =
       await authLib.generateTokens({
         sub: userId,
@@ -180,7 +195,7 @@ export const authService = {
 
     const ttlSeconds = await getRemainingTtlSeconds(
       `refresh:${userId}`,
-      env.REFRESH_TOKEN_TTL_SECONDS
+      env.REFRESH_TOKEN_TTL_SECONDS,
     );
 
     await Promise.all([

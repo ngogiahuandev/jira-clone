@@ -17,3 +17,5 @@ export interface UserSortOptions {
 }
 
 export type GetAllUsersResponse = Omit<IUser, "password">[];
+
+export type CreateUserResponse = Omit<IUser, "password">;

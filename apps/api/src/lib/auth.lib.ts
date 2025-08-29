@@ -36,7 +36,7 @@ export const authLib = {
   generateAccessToken: async (payload: JwtPayload): Promise<string> => {
     const token = await new jose.SignJWT({ payload })
       .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("1h")
+      .setExpirationTime(env.ACCESS_TOKEN_TTL)
       .sign(new TextEncoder().encode(env.JWT_SECRET));
 
     return token;
@@ -45,7 +45,7 @@ export const authLib = {
   verifyToken: async (token: string): Promise<JwtPayload> => {
     const { payload } = await jose.jwtVerify(
       token,
-      new TextEncoder().encode(env.JWT_SECRET)
+      new TextEncoder().encode(env.JWT_SECRET),
     );
 
     return payload as JwtPayload;

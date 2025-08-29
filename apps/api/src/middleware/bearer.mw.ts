@@ -3,7 +3,7 @@ import type { Context, MiddlewareHandler, Next } from "hono";
 
 export const bearerMiddleware: MiddlewareHandler = async (
   c: Context,
-  next: Next
+  next: Next,
 ) => {
   const authHeader = c.req.header("Authorization");
 
@@ -15,6 +15,7 @@ export const bearerMiddleware: MiddlewareHandler = async (
   try {
     const verify = await authLib.verifyToken(token);
     c.set("tokenPayload", { ...verify });
+
     await next();
   } catch (error) {
     console.log(error);

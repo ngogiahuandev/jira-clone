@@ -8,6 +8,13 @@
       "when": 1756320051032,
       "tag": "0000_wakeful_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756443350795,
+      "tag": "0001_chunky_purple_man",
+      "breakpoints": true
     }
   ]
 }

@@ -74,7 +74,7 @@ export default function SignInForm() {
                 <Label
                   htmlFor={field.name}
                   className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500"
+                    field.state.meta.errors.length > 0 && "text-red-500",
                   )}
                 >
                   Email
@@ -103,7 +103,7 @@ export default function SignInForm() {
                 <Label
                   htmlFor={field.name}
                   className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500"
+                    field.state.meta.errors.length > 0 && "text-red-500",
                   )}
                 >
                   Password

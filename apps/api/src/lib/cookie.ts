@@ -25,6 +25,9 @@ export const getRefreshCookie = async (c: Context) => {
     getCookie(c, "refreshToken"),
   ]);
 
+  console.log("userId", userId);
+  console.log("refreshToken", refreshToken);
+
   return { userId, refreshToken };
 };
 

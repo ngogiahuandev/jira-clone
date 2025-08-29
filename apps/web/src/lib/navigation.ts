@@ -189,7 +189,7 @@ export function getSidebarByRole(role: IRole): readonly SidebarNavGroup[] {
 export function insertMenuItem(
   targetGroupId: string,
   newItem: MenuItem,
-  position?: "start" | "end" | number
+  position?: "start" | "end" | number,
 ): MenuGroup[] {
   const updatedGroups = menuGroups.map((group) => {
     if (group.id === targetGroupId) {
@@ -215,7 +215,7 @@ export function insertMenuItem(
 
 export function insertMenuGroup(
   newGroup: MenuGroup,
-  position?: "start" | "end" | number
+  position?: "start" | "end" | number,
 ): MenuGroup[] {
   const newGroups = [...menuGroups];
 
@@ -236,13 +236,13 @@ export function insertMenuItemBetween(
   targetGroupId: string,
   beforeItemId: string,
   afterItemId: string,
-  newItem: MenuItem
+  newItem: MenuItem,
 ): MenuGroup[] {
   const updatedGroups = menuGroups.map((group) => {
     if (group.id === targetGroupId) {
       const newItems = [...group.items];
       const beforeIndex = newItems.findIndex(
-        (item) => item.id === beforeItemId
+        (item) => item.id === beforeItemId,
       );
       const afterIndex = newItems.findIndex((item) => item.id === afterItemId);
 
@@ -273,12 +273,12 @@ export function getMenuGroupById(groupId: string): MenuGroup | undefined {
 
 export function addBadgeToItem(
   itemId: string,
-  badge: string | number
+  badge: string | number,
 ): MenuGroup[] {
   return menuGroups.map((group) => ({
     ...group,
     items: group.items.map((item) =>
-      item.id === itemId ? { ...item, badge } : item
+      item.id === itemId ? { ...item, badge } : item,
     ),
   }));
 }
@@ -295,7 +295,7 @@ export function removeBadgeFromItem(itemId: string): MenuGroup[] {
 
 export function updateItemBadge(
   itemId: string,
-  badge: string | number | null
+  badge: string | number | null,
 ): MenuGroup[] {
   if (badge === null) {
     return removeBadgeFromItem(itemId);

@@ -70,13 +70,24 @@ export const usersColumns: ColumnDef<Omit<IUser, "password">>[] = [
         "default" | "secondary" | "destructive" | "outline"
       > = {
         admin: "destructive",
-        user: "secondary",
-        moderator: "default",
+        regular: "secondary",
       };
 
       return (
         <Badge variant={roleVariants[role] || "outline"} className="capitalize">
           {role || "user"}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "isActive",
+    header: "Active",
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return (
+        <Badge variant={isActive ? "outline" : "destructive"}>
+          {isActive ? "Active" : "Inactive"}
         </Badge>
       );
     },

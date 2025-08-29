@@ -13,7 +13,7 @@ redis.on("error", (err) => {
 
 export const getRemainingTtlSeconds = async (
   key: string,
-  fallbackSeconds: number
+  fallbackSeconds: number,
 ): Promise<number> => {
   const ttl = await redis.ttl(key);
   return typeof ttl === "number" && ttl > 0 ? ttl : fallbackSeconds;

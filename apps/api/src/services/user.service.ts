@@ -1,9 +1,17 @@
 import { db } from "@/db/drizzle";
 import { users } from "@repo/db-schema";
-import { desc, ilike, or, asc, count } from "drizzle-orm";
+import { desc, ilike, or, asc, count, eq, not, and, ne } from "drizzle-orm";
 import type { Context } from "hono";
-import type { GetAllUsersResponse, SortableUserColumns } from "@repo/types";
+import type {
+  CreateUserResponse,
+  GetAllUsersResponse,
+  JwtPayload,
+  SortableUserColumns,
+} from "@repo/types";
 import { userLib } from "@/lib/user.lib";
+import { createUserSchema } from "@repo/validation";
+import { slugify } from "@/lib/slugify";
+import type { Get } from "@/types/middleware";
 
 export const userService = {
   findAllUsers: async (c: Context) => {
@@ -15,6 +23,20 @@ export const userService = {
     const order = queries.order ?? "desc";
     const offset = (Number(page) - 1) * Number(limit);
 
+    const isActive = await userService.checkIsCurrentUserActive(c);
+    if (!isActive) {
+      return c.json({ error: "User is not active" }, 400);
+    }
+
+    if (Number(page) < 1) {
+      return c.json({ error: "Page must be greater than 0" }, 400);
+    }
+    if (Number(limit) < 1) {
+      return c.json({ error: "Limit must be greater than 0" }, 400);
+    }
+
+    const tokenPayload = c.get("tokenPayload") as Get<JwtPayload>;
+
     const validSortFields: SortableUserColumns[] = [
       "id",
       "email",
@@ -25,7 +47,7 @@ export const userService = {
       "updatedAt",
     ];
     const sortField: SortableUserColumns = validSortFields.includes(
-      sortBy as SortableUserColumns
+      sortBy as SortableUserColumns,
     )
       ? (sortBy as SortableUserColumns)
       : "createdAt";
@@ -40,16 +62,20 @@ export const userService = {
           role: users.role,
           imageUrl: users.imageUrl,
           slug: users.slug,
+          isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt,
         })
         .from(users)
         .where(
-          or(
-            ilike(users.name, `%${search}%`),
-            ilike(users.email, `%${search}%`),
-            ilike(users.slug, `%${search}%`)
-          )
+          and(
+            or(
+              ilike(users.name, `%${search}%`),
+              ilike(users.email, `%${search}%`),
+              ilike(users.slug, `%${search}%`),
+            ),
+            ne(users.id, tokenPayload.payload.sub),
+          ),
         )
         .orderBy(sortOrder(userLib.getSortColumn(sortField)))
         .limit(Number(limit))
@@ -58,11 +84,14 @@ export const userService = {
         .select({ count: count() })
         .from(users)
         .where(
-          or(
-            ilike(users.name, `%${search}%`),
-            ilike(users.email, `%${search}%`),
-            ilike(users.slug, `%${search}%`)
-          )
+          and(
+            or(
+              ilike(users.name, `%${search}%`),
+              ilike(users.email, `%${search}%`),
+              ilike(users.slug, `%${search}%`),
+            ),
+            ne(users.id, tokenPayload.payload.sub),
+          ),
         ),
     ]);
 
@@ -73,5 +102,49 @@ export const userService = {
     c.header("X-Limit", limit.toString());
 
     return c.json<GetAllUsersResponse>(u);
+  },
+
+  checkIsCurrentUserActive: async (c: Context) => {
+    const tokenPayload = c.get("tokenPayload") as Get<JwtPayload>;
+
+    if (!tokenPayload) {
+      return false;
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, tokenPayload.payload.sub))
+      .limit(1);
+    if (!user) {
+      return false;
+    }
+    return user.isActive;
+  },
+
+  createUser: async (c: Context) => {
+    const body = await c.req.json();
+
+    const isActive = await userService.checkIsCurrentUserActive(c);
+    if (!isActive) {
+      return c.json({ error: "User is not active" }, 400);
+    }
+
+    const parsed = createUserSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: parsed.error.message }, 400);
+    }
+
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...parsed.data,
+        slug: slugify(parsed.data.name),
+      })
+      .returning();
+
+    const { password: _pw, ...userWithoutPassword } = user;
+
+    return c.json<CreateUserResponse>(userWithoutPassword);
   },
 };

@@ -6,5 +6,6 @@ import { Hono } from "hono";
 const userRoute = new Hono();
 
 userRoute.get("/", bearerMiddleware, adminMiddleware, userService.findAllUsers);
+userRoute.post("/", bearerMiddleware, adminMiddleware, userService.createUser);
 
 export default userRoute;
