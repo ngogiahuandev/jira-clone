@@ -8,7 +8,7 @@ import type {
   JwtPayload,
   SortableUserColumns,
 } from "@repo/types";
-import { userLib } from "@/lib/user.lib";
+import { getUserImageUrl, userLib } from "@/lib/user.lib";
 import { createUserSchema } from "@repo/validation";
 import { slugify } from "@/lib/slugify";
 import type { Get } from "@/types/middleware";
@@ -47,11 +47,25 @@ export const userService = {
       "updatedAt",
     ];
     const sortField: SortableUserColumns = validSortFields.includes(
-      sortBy as SortableUserColumns,
+      sortBy as SortableUserColumns
     )
       ? (sortBy as SortableUserColumns)
       : "createdAt";
     const sortOrder = order === "asc" ? asc : desc;
+
+    const searchConditions =
+      search.trim() !== ""
+        ? or(
+            ilike(users.name, `%${search}%`),
+            ilike(users.email, `%${search}%`),
+            ilike(users.slug, `%${search}%`),
+            eq(users.id, search)
+          )
+        : undefined;
+
+    const whereClause = searchConditions
+      ? and(searchConditions, ne(users.id, tokenPayload.payload.sub))
+      : ne(users.id, tokenPayload.payload.sub);
 
     const [u, totalCount] = await Promise.all([
       await db
@@ -67,32 +81,11 @@ export const userService = {
           updatedAt: users.updatedAt,
         })
         .from(users)
-        .where(
-          and(
-            or(
-              ilike(users.name, `%${search}%`),
-              ilike(users.email, `%${search}%`),
-              ilike(users.slug, `%${search}%`),
-            ),
-            ne(users.id, tokenPayload.payload.sub),
-          ),
-        )
+        .where(whereClause)
         .orderBy(sortOrder(userLib.getSortColumn(sortField)))
         .limit(Number(limit))
         .offset(Number(offset)),
-      await db
-        .select({ count: count() })
-        .from(users)
-        .where(
-          and(
-            or(
-              ilike(users.name, `%${search}%`),
-              ilike(users.email, `%${search}%`),
-              ilike(users.slug, `%${search}%`),
-            ),
-            ne(users.id, tokenPayload.payload.sub),
-          ),
-        ),
+      await db.select({ count: count() }).from(users).where(whereClause),
     ]);
 
     const total = totalCount[0]?.count ?? 0;
@@ -139,6 +132,7 @@ export const userService = {
       .insert(users)
       .values({
         ...parsed.data,
+        imageUrl: getUserImageUrl(parsed.data.name),
         slug: slugify(parsed.data.name),
       })
       .returning();

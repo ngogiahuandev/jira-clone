@@ -1,3 +1,5 @@
+import { env } from "@/env";
+import { slugify } from "@/lib/slugify";
 import { users } from "@repo/db-schema";
 import type { SortableUserColumns } from "@repo/types";
 
@@ -21,3 +23,7 @@ export const userLib = {
     }
   },
 };
+
+export function getUserImageUrl(name: string) {
+  return `${env.AVATAR_SEED}/${slugify(name)}`;
+}

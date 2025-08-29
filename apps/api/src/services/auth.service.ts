@@ -7,6 +7,7 @@ import {
   setRefreshCookie,
 } from "@/lib/cookie";
 import { slugify } from "@/lib/slugify";
+import { getUserImageUrl } from "@/lib/user.lib";
 import { getRemainingTtlSeconds, redis } from "@/redis";
 import { Get } from "@/types/middleware";
 import { users } from "@repo/db-schema";
@@ -39,7 +40,7 @@ export const authService = {
 
     const isPasswordValid = await authLib.verifyPassword(
       password,
-      user.password,
+      user.password
     );
     if (!isPasswordValid) {
       return c.json({ message: "Invalid password" }, 401);
@@ -60,7 +61,7 @@ export const authService = {
         `refresh:${user.id!}`,
         refreshToken,
         "EX",
-        env.REFRESH_TOKEN_TTL_SECONDS,
+        env.REFRESH_TOKEN_TTL_SECONDS
       ),
       setRefreshCookie(c, {
         uuid: user.id!,
@@ -99,6 +100,7 @@ export const authService = {
         name,
         password: hashedPassword,
         slug: slugify(name),
+        imageUrl: getUserImageUrl(name),
       })
       .returning();
 
@@ -117,7 +119,7 @@ export const authService = {
         `refresh:${newUser.id!}`,
         refreshToken,
         "EX",
-        env.REFRESH_TOKEN_TTL_SECONDS,
+        env.REFRESH_TOKEN_TTL_SECONDS
       ),
       setRefreshCookie(c, { uuid: newUser.id!, refreshToken }),
     ]);
@@ -169,7 +171,7 @@ export const authService = {
     if (redisRefreshToken !== refreshToken) {
       return c.json(
         { message: "Unauthorized invalid refresh token in redis" },
-        401,
+        401
       );
     }
 
@@ -195,7 +197,7 @@ export const authService = {
 
     const ttlSeconds = await getRemainingTtlSeconds(
       `refresh:${userId}`,
-      env.REFRESH_TOKEN_TTL_SECONDS,
+      env.REFRESH_TOKEN_TTL_SECONDS
     );
 
     await Promise.all([
