@@ -7,6 +7,7 @@ import { UserPaging } from "@/components/data-table/users/user-paging";
 import { UserSearch } from "@/components/data-table/users/user-search";
 import { UserSort } from "@/components/data-table/users/user-sort";
 import { usersColumns } from "@/components/data-table/users/users-columns";
+import { CreateUserForm } from "@/components/forms/users/create-user-form";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
@@ -25,7 +26,12 @@ export function UserDataTable() {
           <UserSearch />
           <UserSort />
         </div>
-        <RefreshDataTableButton queryKey={["users", searchParams.toString()]} />
+        <div className="flex gap-2">
+          <RefreshDataTableButton
+            queryKey={["users", searchParams.toString()]}
+          />
+          <CreateUserForm />
+        </div>
       </div>
       <DataTable
         columns={usersColumns}

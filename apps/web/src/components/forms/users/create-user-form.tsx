@@ -1,67 +1,99 @@
 "use client";
 
-import { auth } from "@/axios/auth";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/stores/auth.store";
-import { type SignUpSchema, signUpSchema } from "@repo/validation";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { createUserSchema, type CreateUserSchema } from "@repo/validation";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { IRole } from "@repo/db-schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { users } from "@/axios/user";
 import { toast } from "sonner";
+import { GenerateRandomUserData } from "@/components/forms/users/generate-random-user-data";
 
-const defaultValues: SignUpSchema = {
+const defaultValues: CreateUserSchema = {
   name: "",
   email: "",
   password: "",
-  confirmPassword: "",
+  role: "regular",
 };
 
-export default function SignUpForm() {
-  const router = useRouter();
+const roles: { label: string; value: IRole }[] = [
+  {
+    label: "Regular",
+    value: "regular",
+  },
+  {
+    label: "Admin",
+    value: "admin",
+  },
+];
+
+export function CreateUserForm() {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: SignUpSchema) => auth.signUp(payload),
-    onSuccess: (data) => {
-      toast.success("Sign up successful");
-      useAuthStore.setState({
-        accessToken: data.accessToken,
-        user: data.user,
-        isAuthenticated: true,
-      });
-      router.push("/");
+    mutationFn: (payload: CreateUserSchema) => users.createUser(payload),
+    onSuccess: () => {
+      toast.success("User created successfully");
+      setIsOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (error: string) => {
-      toast.error(error ?? "Sign up failed");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
   const form = useForm({
     defaultValues,
     validators: {
-      onSubmit: signUpSchema,
+      onSubmit: createUserSchema,
     },
     onSubmit: async (values) => {
       mutation.mutate(values.value);
     },
   });
+
   return (
-    <Card className="bg-background mx-auto w-full max-w-md border-none shadow-none">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Sign up</CardTitle>
-        <CardDescription className="">
-          Create a new account to get started
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Dialog
+      open={isOpen}
+      onOpenChange={() => {
+        form.reset();
+        setIsOpen((prev) => !prev);
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>
+          <Plus />
+          Create User
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="min-w-xl ">
+        <DialogHeader>
+          <DialogTitle>Create User</DialogTitle>
+          <DialogDescription>
+            Create a new user with the following details.
+          </DialogDescription>
+        </DialogHeader>
         <form
           className="space-y-6"
           onSubmit={(e) => {
@@ -70,6 +102,38 @@ export default function SignUpForm() {
             form.handleSubmit();
           }}
         >
+          <form.Field name="email">
+            {(field) => (
+              <div className="space-y-2">
+                <Label
+                  htmlFor={field.name}
+                  className={cn(
+                    field.state.meta.errors.length > 0 && "text-red-500"
+                  )}
+                >
+                  Email
+                </Label>
+                <Input
+                  id={field.name}
+                  name="name"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Enter user email"
+                  type="text"
+                  className={cn(
+                    field.state.meta.errors.length > 0 && "border-destructive"
+                  )}
+                  disabled={mutation.isPending}
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors[0]?.message}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
@@ -87,37 +151,8 @@ export default function SignUpForm() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter your name"
+                  placeholder="Enter user name"
                   type="text"
-                  disabled={mutation.isPending}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-sm text-red-500">
-                    {field.state.meta.errors[0]?.message}
-                  </p>
-                )}
-              </div>
-            )}
-          </form.Field>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label
-                  htmlFor={field.name}
-                  className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500"
-                  )}
-                >
-                  Email
-                </Label>
-                <Input
-                  id={field.name}
-                  name="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter your email"
-                  type="email"
                   disabled={mutation.isPending}
                 />
                 {field.state.meta.errors.length > 0 && (
@@ -141,11 +176,11 @@ export default function SignUpForm() {
                 </Label>
                 <Input
                   id={field.name}
-                  name="password"
+                  name="name"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter user password"
                   type="password"
                   disabled={mutation.isPending}
                 />
@@ -157,7 +192,7 @@ export default function SignUpForm() {
               </div>
             )}
           </form.Field>
-          <form.Field name="confirmPassword">
+          <form.Field name="role">
             {(field) => (
               <div className="space-y-2">
                 <Label
@@ -166,43 +201,56 @@ export default function SignUpForm() {
                     field.state.meta.errors.length > 0 && "text-red-500"
                   )}
                 >
-                  Confirm Password
+                  Password
                 </Label>
-                <Input
-                  id={field.name}
-                  name="confirmPassword"
+                <Select
                   value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Confirm your password"
-                  type="password"
+                  onValueChange={(value) => field.handleChange(value as IRole)}
                   disabled={mutation.isPending}
-                />
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {field.state.meta.errors.length > 0 && (
                   <p className="text-sm text-red-500">
                     {field.state.meta.errors[0]?.message}
                   </p>
                 )}
+                {field.state.value === "admin" && (
+                  <p className="text-sm text-red-500">
+                    Be careful, admin can do anything.
+                  </p>
+                )}
               </div>
             )}
           </form.Field>
-          <form.Subscribe>
-            <Button
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full"
-            >
-              {mutation.isPending ? "Signing up..." : "Sign up"}
+          <DialogFooter>
+            <GenerateRandomUserData
+              onGenerate={(data) => {
+                form.setFieldValue("name", data.name);
+                form.setFieldValue("email", data.email);
+                form.setFieldValue("password", data.password);
+              }}
+            />
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={form.state.isSubmitting}>
+              {form.state.isSubmitting ? "Creating..." : "Create User"}
             </Button>
-          </form.Subscribe>
+          </DialogFooter>
         </form>
-        <div className="mt-4 text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="text-blue-600 hover:underline">
-            Sign in
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

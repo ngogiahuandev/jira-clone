@@ -20,6 +20,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+const defaultValues: SignInSchema = {
+  email: "",
+  password: "",
+};
+
 export default function SignInForm() {
   const router = useRouter();
   const mutation = useMutation({
@@ -39,10 +44,7 @@ export default function SignInForm() {
   });
 
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues,
     validators: {
       onSubmit: signInSchema,
     },
@@ -74,7 +76,7 @@ export default function SignInForm() {
                 <Label
                   htmlFor={field.name}
                   className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500",
+                    field.state.meta.errors.length > 0 && "text-red-500"
                   )}
                 >
                   Email
@@ -103,7 +105,7 @@ export default function SignInForm() {
                 <Label
                   htmlFor={field.name}
                   className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500",
+                    field.state.meta.errors.length > 0 && "text-red-500"
                   )}
                 >
                   Password
