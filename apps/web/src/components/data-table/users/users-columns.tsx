@@ -1,5 +1,5 @@
 import { EditUserForm } from "@/components/forms/users/edit-user-form";
-import { UserStatusUpdateButton } from "@/components/forms/users/user-status-update-button";
+import { UserStatusUpdateButton } from "@/components/data-table/users/user-status-update-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import type { IUser } from "@repo/db-schema";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal } from "lucide-react";
+import { DeleteUser } from "@/components/data-table/users/delete-user";
 
 export const usersColumns: ColumnDef<Omit<IUser, "password">>[] = [
   {
@@ -167,6 +168,7 @@ export const usersColumns: ColumnDef<Omit<IUser, "password">>[] = [
             <DropdownMenuSeparator className="bg-input" />
             <EditUserForm user={user} />
             <UserStatusUpdateButton user={user} />
+            <DeleteUser userId={user.id || ""} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

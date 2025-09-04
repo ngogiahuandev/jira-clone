@@ -23,3 +23,7 @@ export type CreateUserResponse = Omit<IUser, "password">;
 export type UpdateUserResponse = Omit<IUser, "password">;
 
 export type DeActiveUserResponse = Omit<IUser, "password">;
+
+export type DeleteUserResponse = {
+  message: string;
+};

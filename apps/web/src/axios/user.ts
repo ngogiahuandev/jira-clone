@@ -2,6 +2,7 @@ import { axiosInstance } from "@/axios";
 import type {
   CreateUserResponse,
   DeActiveUserResponse,
+  DeleteUserResponse,
   GetAllUsersResponse,
   UpdateUserResponse,
 } from "@repo/types";
@@ -48,6 +49,20 @@ export const users = {
       const response = await axiosInstance.patch<UpdateUserResponse>(
         `/users/${id}`,
         data
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw error.response?.data.error;
+      }
+      throw error;
+    }
+  },
+
+  deleteUser: async (id: string) => {
+    try {
+      const response = await axiosInstance.delete<DeleteUserResponse>(
+        `/users/${id}`
       );
       return response.data;
     } catch (error) {

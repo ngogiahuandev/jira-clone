@@ -13,5 +13,11 @@ userRoute.patch(
   adminMiddleware,
   userService.updateUser
 );
+userRoute.delete(
+  "/:id",
+  bearerMiddleware,
+  adminMiddleware,
+  userService.deleteUser
+);
 
 export default userRoute;

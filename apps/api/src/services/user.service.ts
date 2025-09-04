@@ -5,6 +5,7 @@ import type { Context } from "hono";
 import type {
   CreateUserResponse,
   DeActiveUserResponse,
+  DeleteUserResponse,
   GetAllUsersResponse,
   JwtPayload,
   SortableUserColumns,
@@ -174,5 +175,23 @@ export const userService = {
       console.error(error);
       return c.json({ error: "Failed to update user" }, 400);
     }
+  },
+
+  deleteUser: async (c: Context) => {
+    const id = c.req.param("id");
+
+    if (!id) {
+      return c.json({ error: "User ID is required" }, 400);
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    await db.delete(users).where(eq(users.id, id));
+
+    return c.json<DeleteUserResponse>({ message: "User deleted successfully" });
   },
 };
