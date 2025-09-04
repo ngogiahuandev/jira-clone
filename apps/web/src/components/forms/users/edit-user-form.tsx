@@ -1,10 +1,9 @@
 "use client";
 
+import { users } from "@/axios/user";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -12,12 +11,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { createUserSchema, type CreateUserSchema } from "@repo/validation";
-import { useForm } from "@tanstack/react-form";
-import { Label } from "@/components/ui/label";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -25,27 +21,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { IRole } from "@repo/db-schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { users } from "@/axios/user";
-import { toast } from "sonner";
-import { GenerateRandomUserData } from "@/components/forms/users/generate-random-user-data";
+import { Switch } from "@/components/ui/switch";
+import { isDirtyByValue, shallowDiff } from "@/lib/form-diff";
 import { roles } from "@/lib/roles";
+import { cn } from "@/lib/utils";
+import type { IRole, IUser } from "@repo/db-schema";
+import { type UpdateUserSchema, updateUserSchema } from "@repo/validation";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
-const defaultValues: CreateUserSchema = {
-  name: "",
-  email: "",
-  password: "",
-  role: "regular",
-};
+function normalize(values: {
+  name: string;
+  role: IRole;
+  isActive: boolean;
+  slug: string;
+  password?: string;
+}) {
+  return {
+    ...values,
+    slug: values.slug.trim().replace(/^@+/, ""),
+    name: values.name.trim(),
+  };
+}
 
-export function CreateUserForm() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+interface EditUserFormProps {
+  user: Omit<IUser, "password">;
+}
+
+export function EditUserForm({ user }: EditUserFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: CreateUserSchema) => users.createUser(payload),
+    mutationFn: (payload: UpdateUserSchema) =>
+      users.updateUser(user.id!, payload),
     onSuccess: () => {
-      toast.success("User created successfully");
+      toast.success("User updated successfully");
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -53,16 +65,43 @@ export function CreateUserForm() {
       toast.error(error.message);
     },
   });
+
+  const initialValues = useMemo(
+    () =>
+      normalize({
+        name: user.name,
+        role: user.role as IRole,
+        isActive: user.isActive ?? false,
+        slug: user.slug,
+        password: "",
+      }),
+    [user]
+  );
+
   const form = useForm({
-    defaultValues,
+    defaultValues: initialValues,
     validators: {
-      onSubmit: createUserSchema,
+      onSubmit: updateUserSchema as any,
     },
     onSubmit: async (values) => {
-      mutation.mutate(values.value);
+      const normalizedCurrent = normalize(values.value);
+      const changedFields = shallowDiff(initialValues, normalizedCurrent);
+
+      if (Object.keys(changedFields).length === 0) return;
+
+      if (changedFields.password === "") delete changedFields.password;
+
+      console.log("Changed fields:", changedFields);
+      mutation.mutate(changedFields);
     },
   });
 
+  const currentValues = useStore(form.store, (s) => s.values);
+
+  const dirty = useMemo(
+    () => isDirtyByValue(normalize(initialValues), normalize(currentValues)),
+    [initialValues, currentValues]
+  );
   return (
     <Dialog
       open={isOpen}
@@ -72,18 +111,26 @@ export function CreateUserForm() {
       }}
     >
       <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          Create User
-        </Button>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+        >
+          Edit user
+        </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="min-w-xl ">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle>
+            Edit user <span className="font-semibold">{user.name}</span>
+          </DialogTitle>
           <DialogDescription>
-            Create a new user with the following details.
+            Edit the user with the following details.
           </DialogDescription>
         </DialogHeader>
+
         <form
           className="space-y-6"
           onSubmit={(e) => {
@@ -92,38 +139,6 @@ export function CreateUserForm() {
             form.handleSubmit();
           }}
         >
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label
-                  htmlFor={field.name}
-                  className={cn(
-                    field.state.meta.errors.length > 0 && "text-red-500"
-                  )}
-                >
-                  Email
-                </Label>
-                <Input
-                  id={field.name}
-                  name="name"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter user email"
-                  type="text"
-                  className={cn(
-                    field.state.meta.errors.length > 0 && "border-destructive"
-                  )}
-                  disabled={mutation.isPending}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-sm text-red-500">
-                    {field.state.meta.errors[0]?.message}
-                  </p>
-                )}
-              </div>
-            )}
-          </form.Field>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
@@ -143,7 +158,6 @@ export function CreateUserForm() {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="Enter user name"
                   type="text"
-                  disabled={mutation.isPending}
                 />
                 {field.state.meta.errors.length > 0 && (
                   <p className="text-sm text-red-500">
@@ -153,6 +167,36 @@ export function CreateUserForm() {
               </div>
             )}
           </form.Field>
+
+          <form.Field name="slug">
+            {(field) => (
+              <div className="space-y-2">
+                <Label
+                  htmlFor={field.name}
+                  className={cn(
+                    field.state.meta.errors.length > 0 && "text-red-500"
+                  )}
+                >
+                  Slug (@)
+                </Label>
+                <Input
+                  id={field.name}
+                  name="slug"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Enter user slug"
+                  type="text"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors[0]?.message}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
@@ -162,17 +206,16 @@ export function CreateUserForm() {
                     field.state.meta.errors.length > 0 && "text-red-500"
                   )}
                 >
-                  Password
+                  Password (leave blank if unchanged)
                 </Label>
                 <Input
                   id={field.name}
-                  name="name"
+                  name="password"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter user password"
+                  placeholder="Enter new password"
                   type="password"
-                  disabled={mutation.isPending}
                 />
                 {field.state.meta.errors.length > 0 && (
                   <p className="text-sm text-red-500">
@@ -182,6 +225,7 @@ export function CreateUserForm() {
               </div>
             )}
           </form.Field>
+
           <form.Field name="role">
             {(field) => (
               <div className="space-y-2">
@@ -191,12 +235,11 @@ export function CreateUserForm() {
                     field.state.meta.errors.length > 0 && "text-red-500"
                   )}
                 >
-                  Password
+                  Role {/* fix: trước đó label ghi nhầm "Password" */}
                 </Label>
                 <Select
                   value={field.state.value}
                   onValueChange={(value) => field.handleChange(value as IRole)}
-                  disabled={mutation.isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select role" />
@@ -222,21 +265,39 @@ export function CreateUserForm() {
               </div>
             )}
           </form.Field>
+
+          <form.Field name="isActive">
+            {(field) => (
+              <div className="flex items-center gap-2 p-4 rounded-md border border-input">
+                <div className="space-y-1 flex-1">
+                  <Label
+                    htmlFor={field.name}
+                    className={cn(
+                      field.state.meta.errors.length > 0 && "text-red-500"
+                    )}
+                  >
+                    Active
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    This user will be able to login to the system.
+                  </p>
+                </div>
+                <Switch
+                  id={field.name}
+                  name={field.name}
+                  checked={field.state.value}
+                  onCheckedChange={(value) => field.handleChange(value)}
+                />
+              </div>
+            )}
+          </form.Field>
+
           <DialogFooter>
-            <GenerateRandomUserData
-              onGenerate={(data) => {
-                form.setFieldValue("name", data.name);
-                form.setFieldValue("email", data.email);
-                form.setFieldValue("password", data.password);
-              }}
-            />
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type="submit" disabled={form.state.isSubmitting}>
-              {form.state.isSubmitting ? "Creating..." : "Create User"}
+            <Button
+              type="submit"
+              disabled={form.state.isSubmitting || !dirty || mutation.isPending}
+            >
+              {form.state.isSubmitting ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </form>

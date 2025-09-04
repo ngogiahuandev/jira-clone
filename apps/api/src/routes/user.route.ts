@@ -7,5 +7,11 @@ const userRoute = new Hono();
 
 userRoute.get("/", bearerMiddleware, adminMiddleware, userService.findAllUsers);
 userRoute.post("/", bearerMiddleware, adminMiddleware, userService.createUser);
+userRoute.patch(
+  "/:id",
+  bearerMiddleware,
+  adminMiddleware,
+  userService.updateUser
+);
 
 export default userRoute;

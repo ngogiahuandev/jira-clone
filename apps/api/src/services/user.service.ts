@@ -4,12 +4,14 @@ import { desc, ilike, or, asc, count, eq, not, and, ne } from "drizzle-orm";
 import type { Context } from "hono";
 import type {
   CreateUserResponse,
+  DeActiveUserResponse,
   GetAllUsersResponse,
   JwtPayload,
   SortableUserColumns,
+  UpdateUserResponse,
 } from "@repo/types";
 import { getUserImageUrl, userLib } from "@/lib/user.lib";
-import { createUserSchema } from "@repo/validation";
+import { createUserSchema, updateUserSchema } from "@repo/validation";
 import { slugify } from "@/lib/slugify";
 import type { Get } from "@/types/middleware";
 
@@ -140,5 +142,37 @@ export const userService = {
     const { password: _pw, ...userWithoutPassword } = user;
 
     return c.json<CreateUserResponse>(userWithoutPassword);
+  },
+
+  updateUser: async (c: Context) => {
+    const id = c.req.param("id");
+
+    if (!id) {
+      return c.json({ error: "User ID is required" }, 400);
+    }
+
+    const body = await c.req.json();
+
+    const parsed = updateUserSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: parsed.error.message }, 400);
+    }
+
+    try {
+      const [user] = await db
+        .update(users)
+        .set(parsed.data)
+        .where(eq(users.id, id))
+        .returning();
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      return c.json<UpdateUserResponse>(user);
+    } catch (error) {
+      console.error(error);
+      return c.json({ error: "Failed to update user" }, 400);
+    }
   },
 };

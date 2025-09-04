@@ -1,3 +1,5 @@
+import { EditUserForm } from "@/components/forms/users/edit-user-form";
+import { UserStatusUpdateButton } from "@/components/forms/users/user-status-update-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatSlug } from "@/lib/slug";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import type { IUser } from "@repo/db-schema";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -67,7 +70,7 @@ export const usersColumns: ColumnDef<Omit<IUser, "password">>[] = [
     accessorKey: "slug",
     header: "Slug",
     cell: ({ row }) => (
-      <Badge variant="secondary">{row.getValue("slug")}</Badge>
+      <Badge variant="secondary">{formatSlug(row.getValue("slug"))}</Badge>
     ),
   },
   {
@@ -143,16 +146,27 @@ export const usersColumns: ColumnDef<Omit<IUser, "password">>[] = [
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-muted border-border">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className=" w-48 border-input">
+            <DropdownMenuLabel className="space-y-1">
+              <p className="text-sm font-medium">Actions</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {formatSlug(user.slug)}
+              </p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-input" />
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(user.id || "")}
             >
               Copy user ID
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(user.email || "")}
+            >
+              Copy user email
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-input" />
+            <EditUserForm user={user} />
+            <UserStatusUpdateButton user={user} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

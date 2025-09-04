@@ -1,6 +1,11 @@
 import { axiosInstance } from "@/axios";
-import type { GetAllUsersResponse } from "@repo/types";
-import { CreateUserSchema } from "@repo/validation";
+import type {
+  CreateUserResponse,
+  DeActiveUserResponse,
+  GetAllUsersResponse,
+  UpdateUserResponse,
+} from "@repo/types";
+import type { CreateUserSchema, UpdateUserSchema } from "@repo/validation";
 import { AxiosError } from "axios";
 
 export const users = {
@@ -25,7 +30,25 @@ export const users = {
 
   createUser: async (data: CreateUserSchema) => {
     try {
-      const response = await axiosInstance.post("/users", data);
+      const response = await axiosInstance.post<CreateUserResponse>(
+        "/users",
+        data
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw error.response?.data.error;
+      }
+      throw error;
+    }
+  },
+
+  updateUser: async (id: string, data: UpdateUserSchema) => {
+    try {
+      const response = await axiosInstance.patch<UpdateUserResponse>(
+        `/users/${id}`,
+        data
+      );
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
