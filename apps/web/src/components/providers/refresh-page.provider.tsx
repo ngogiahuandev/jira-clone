@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/stores/auth.store";
 import { auth } from "@/axios/auth";
 import { LoadingScreen } from "@/components/layouts/loading-screen";
+import { useAuthStore } from "@/stores/auth.store";
 import { useSidebarStore } from "@/stores/sidebar.store";
-import { getSidebarByRole } from "@/lib/navigation";
-import { SidebarNavGroup } from "@/types/dashboard";
-import { IRole } from "@repo/db-schema";
+import { useEffect, useState } from "react";
 
 interface RefreshPageProviderProps {
   children: React.ReactNode;
@@ -32,7 +29,6 @@ export const RefreshPageProvider = ({ children }: RefreshPageProviderProps) => {
             user,
             isAuthenticated: true,
           });
-          setItems(getSidebarByRole(user.role as IRole) as SidebarNavGroup[]);
         }
       } catch (error) {
         console.error("Failed to initialize user:", error);
@@ -43,7 +39,7 @@ export const RefreshPageProvider = ({ children }: RefreshPageProviderProps) => {
     };
 
     init();
-  }, [setAuth, clearAuth, setItems]);
+  }, [setAuth, clearAuth]);
 
   if (isLoading) {
     return <LoadingScreen message="Loading your account..." />;

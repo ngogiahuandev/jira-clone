@@ -1,5 +1,6 @@
 import type { SidebarNavGroup, SidebarNavItem } from "@/types/dashboard";
 import type { IRole } from "@repo/db-schema";
+import { roles } from "@repo/db-schema";
 import {
   BarChart3,
   Bean,
@@ -186,10 +187,28 @@ export function getSidebarByRole(role: IRole): readonly SidebarNavGroup[] {
     });
 }
 
+export function getAllRolesWithUrl(): { role: IRole; url: string }[] {
+  return roles.enumValues.map((role) => {
+    const sidebar = getSidebarByRole(role as IRole);
+    const firstHref = sidebar[0]?.items[0]?.href ?? "/dashboard";
+    return { role: role as IRole, url: firstHref };
+  });
+}
+
+export function getAllRolesPermissionUrls(): { role: IRole; urls: string[] }[] {
+  return roles.enumValues.map((role) => {
+    const sidebar = getSidebarByRole(role as IRole);
+    const urls = sidebar.flatMap((group) =>
+      group.items.map((item) => item.href)
+    );
+    return { role: role as IRole, urls };
+  });
+}
+
 export function insertMenuItem(
   targetGroupId: string,
   newItem: MenuItem,
-  position?: "start" | "end" | number,
+  position?: "start" | "end" | number
 ): MenuGroup[] {
   const updatedGroups = menuGroups.map((group) => {
     if (group.id === targetGroupId) {
@@ -215,7 +234,7 @@ export function insertMenuItem(
 
 export function insertMenuGroup(
   newGroup: MenuGroup,
-  position?: "start" | "end" | number,
+  position?: "start" | "end" | number
 ): MenuGroup[] {
   const newGroups = [...menuGroups];
 
@@ -236,13 +255,13 @@ export function insertMenuItemBetween(
   targetGroupId: string,
   beforeItemId: string,
   afterItemId: string,
-  newItem: MenuItem,
+  newItem: MenuItem
 ): MenuGroup[] {
   const updatedGroups = menuGroups.map((group) => {
     if (group.id === targetGroupId) {
       const newItems = [...group.items];
       const beforeIndex = newItems.findIndex(
-        (item) => item.id === beforeItemId,
+        (item) => item.id === beforeItemId
       );
       const afterIndex = newItems.findIndex((item) => item.id === afterItemId);
 
@@ -273,12 +292,12 @@ export function getMenuGroupById(groupId: string): MenuGroup | undefined {
 
 export function addBadgeToItem(
   itemId: string,
-  badge: string | number,
+  badge: string | number
 ): MenuGroup[] {
   return menuGroups.map((group) => ({
     ...group,
     items: group.items.map((item) =>
-      item.id === itemId ? { ...item, badge } : item,
+      item.id === itemId ? { ...item, badge } : item
     ),
   }));
 }
@@ -295,7 +314,7 @@ export function removeBadgeFromItem(itemId: string): MenuGroup[] {
 
 export function updateItemBadge(
   itemId: string,
-  badge: string | number | null,
+  badge: string | number | null
 ): MenuGroup[] {
   if (badge === null) {
     return removeBadgeFromItem(itemId);
