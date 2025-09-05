@@ -7,8 +7,8 @@ import type { BreadcrumbItem, SidebarNavGroup } from "@/types/dashboard";
 import { useSidebarStore } from "@/stores/sidebar.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useEffect } from "react";
-import { getSidebarByRole } from "@/lib/navigation";
-import { roles, type IRole } from "@repo/db-schema";
+import { getSidebarByRole } from "@/lib/sidebar";
+import type { IRole } from "@repo/db-schema";
 import { ErrorScreen } from "@/components/layouts/error-screen";
 
 export interface DashboardLayoutProps {

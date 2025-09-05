@@ -39,6 +39,7 @@ export default function SignInForm() {
       router.push("/");
     },
     onError: (error: string) => {
+      console.error(error);
       toast.error(error ?? "Sign in failed");
     },
   });

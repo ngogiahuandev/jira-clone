@@ -1,6 +1,7 @@
 import { axiosInstance } from ".";
 import type { SignInSchema, SignUpSchema } from "@repo/validation";
 import type {
+  ErrorResponse,
   MeResponse,
   RotateTokensResponse,
   SignInResponse,
@@ -14,12 +15,12 @@ export const auth = {
     try {
       const response = await axiosInstance.post<SignInResponse>(
         "/auth/sign-in",
-        data,
+        data
       );
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        throw error.response?.data.error;
+        throw error.response?.data.message;
       }
       throw error;
     }
@@ -29,7 +30,7 @@ export const auth = {
     try {
       const response = await axiosInstance.post<SignUpResponse>(
         "/auth/sign-up",
-        data,
+        data
       );
       return response.data;
     } catch (error) {
@@ -68,7 +69,7 @@ export const auth = {
   rotateTokens: async () => {
     try {
       const response = await axiosInstance.post<RotateTokensResponse>(
-        "/auth/rotate-tokens",
+        "/auth/rotate-tokens"
       );
       return response.data;
     } catch (error) {
