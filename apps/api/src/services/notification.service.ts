@@ -60,6 +60,10 @@ export const notificationService = {
       db
         .select({ count: count() })
         .from(userNotifications)
+        .innerJoin(
+          notification,
+          eq(userNotifications.notificationId, notification.id)
+        )
         .where(
           and(
             eq(userNotifications.userId, tokenPayload.payload.sub),

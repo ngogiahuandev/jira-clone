@@ -8,17 +8,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEndScroll } from "@/hooks/use-end-scroll";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useDebounce } from "use-debounce";
 
 export function NotificationDashboardList() {
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
   const { data, isLoading } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => notification.getMyNotifications(1, 10),
+    queryKey: ["notifications", debouncedSearch],
+    queryFn: () => notification.getMyNotifications(1, 10, debouncedSearch),
   });
   const { endRef, showScrollButton, scrollRef, scrollToBottom } =
     useEndScroll();
+
   return (
     <div className="space-y-2">
-      <Input placeholder="Search" />
+      <Input
+        placeholder="Search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       {isLoading ? (
         <div className="p-8 text-center text-muted-foreground">
           <Loader2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
