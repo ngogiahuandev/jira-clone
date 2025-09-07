@@ -4,8 +4,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { env } from "./env";
-import { getCookie, setCookie } from "hono/cookie";
-import { getRefreshCookie } from "@/lib/cookie";
 
 const app = new Hono();
 app.use(logger());
@@ -15,7 +13,7 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
     exposeHeaders: ["X-Total-Count", "X-Page", "X-Limit"],
     credentials: true,
-  }),
+  })
 );
 
 app.route("/api", routes);
@@ -27,5 +25,5 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
-  },
+  }
 );

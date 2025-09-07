@@ -15,6 +15,20 @@
       "when": 1756443350795,
       "tag": "0001_chunky_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757131069771,
+      "tag": "0002_parallel_black_bird",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757229602582,
+      "tag": "0003_worried_blacklash",
+      "breakpoints": true
     }
   ]
 }

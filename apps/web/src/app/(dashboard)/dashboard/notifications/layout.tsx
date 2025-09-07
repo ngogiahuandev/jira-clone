@@ -1,11 +1,12 @@
 import { DashboardLayout } from "@/components/dashboard";
 import { DashboardTitle } from "@/components/dashboard/dashbaord-title";
+import { NotificationDashboardLayout } from "@/components/notification/notification-dashboard-layout";
 import type { BreadcrumbItem } from "@/types/dashboard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Users",
-  description: "Users",
+  title: "Notifications",
+  description: "Notifications",
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -15,18 +16,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       href: "/dashboard",
     },
     {
-      title: "Users",
-      href: "/dashboard/users",
+      title: "Notifications",
+      href: "/dashboard/notifications",
     },
   ];
+
   return (
     <DashboardLayout breadcrumbItems={breadcrumbItems}>
       <DashboardTitle
-        title="Users"
-        description="Manage your users"
-        className="mb-4"
+        title="Notifications"
+        description="Manage your notifications"
+        className="mb-4 "
       />
-      {children}
+      <NotificationDashboardLayout>{children}</NotificationDashboardLayout>
     </DashboardLayout>
   );
 }

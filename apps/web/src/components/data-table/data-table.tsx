@@ -32,7 +32,7 @@ export function DataTable<TData, TValue>({
     <Card className="overflow-hidden rounded-md border p-0">
       <div className="relative w-full overflow-x-auto">
         <table className="w-full caption-bottom text-sm">
-          <thead className="bg-muted sticky top-0 z-10 rounded-t-md [&_tr]:border-b">
+          <thead className="sticky top-0 z-10 rounded-t-md [&_tr]:border-b">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}

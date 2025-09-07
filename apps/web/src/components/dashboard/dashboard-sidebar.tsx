@@ -29,7 +29,7 @@ export function DashboardSidebar({ navigation }: DashboardSidebarProps) {
 
   return (
     <Sidebar collapsible="icon" className="bg-background border-r-0">
-      <SidebarHeader className="border-sidebar-border bg-background h-12 border-b">
+      <SidebarHeader className=" bg-background h-12 border-b">
         <Link href="/" className="flex h-full items-center gap-2 select-none">
           {open ? (
             <div className="text-foreground pl-2 text-xl font-bold">
@@ -48,7 +48,10 @@ export function DashboardSidebar({ navigation }: DashboardSidebarProps) {
               <SidebarMenu>
                 {group.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                  const isRootItem = item.href.split("/").length === 2;
+                  const isActive = isRootItem
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href);
 
                   return (
                     <SidebarMenuItem key={item.title}>
@@ -75,7 +78,7 @@ export function DashboardSidebar({ navigation }: DashboardSidebarProps) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="border-sidebar-border bg-background border-t">
+      <SidebarFooter className=" bg-background border-t">
         <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>

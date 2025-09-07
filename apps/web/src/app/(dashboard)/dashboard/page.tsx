@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/dashboard";
-import { BreadcrumbItem } from "@/types/dashboard";
+import type { BreadcrumbItem } from "@/types/dashboard";
 
 export default function Page() {
   const breadcrumbItems: BreadcrumbItem[] = [

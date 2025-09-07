@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthenMenu } from "@/components/auth/authen-menu";
+import { NotificationDropdown } from "@/components/notification/notification-dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

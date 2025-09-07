@@ -54,7 +54,7 @@ export function DashboardLayout({
         <DashboardSidebar navigation={items} />
         <SidebarInset className="flex flex-col">
           <DashboardHeader breadcrumbItems={breadcrumbItems} />
-          <main className="flex-1 overflow-auto p-4">{children}</main>
+          <main className="flex-1 overflow-auto p-4 ">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>

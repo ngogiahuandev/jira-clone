@@ -10,8 +10,7 @@ import { getUserImageUrl } from "@/lib/user.lib";
 const BASE_PASSWORD = "123456";
 
 export async function seedUsers() {
-  await db.delete(users);
-
+  console.log("Seeding users...");
   const hashed = await authLib.hashPassword(BASE_PASSWORD);
 
   const admin: IUser = {
